@@ -79,7 +79,7 @@ class Scanner {
                     break;
                 case '"':string();
                     break;
-                    default:
+                default:
                     if (isDigit(c)) {
                       number();
                     } 

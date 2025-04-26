@@ -8,6 +8,9 @@ import java.nio.file.Paths;
 import java.util.List;
 public class Jail {
     static boolean errorOccured = false;
+    static boolean runtimeError = false;
+
+    private static final Interpreter interpreter = new Interpreter();
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
             System.out.println("Usage: jail [script]");
@@ -27,6 +30,7 @@ public class Jail {
         run(new String(bytes, Charset.defaultCharset()));
         // Indicate an error in the exit code.
         if (errorOccured) System.exit(65);
+        if(runtimeError) System.exit(70);
     }
 
     //To reun the code from command Line
@@ -48,11 +52,18 @@ public class Jail {
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
         Expr expression = parser.parse();
+        System.out.println(tokens);
+        System.out.println(new AstPrinter().print(expression));
         // Stop if there was a syntax error.
         if (errorOccured) return;
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
-     static void error(int line, String message) {
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() +
+            "\n[line " + error.token.line + "]");
+        runtimeError = true;
+    }
+    static void error(int line, String message) {
         report(line, "", message);
     }
     private static void report(int line, String where,String message) {
