@@ -1,5 +1,6 @@
 package com.interpreter.jail;
 
+import com.interpreter.jail.Expr.Assign;
 import com.interpreter.jail.Expr.Variable;
 
 public class AstPrinter implements Expr.Visitor<String> {
@@ -49,5 +50,10 @@ public class AstPrinter implements Expr.Visitor<String> {
     public String visitVariableExpr(Variable expr) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
+    }
+    @Override
+    public String visitAssignExpr(Assign expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
     }
 }
