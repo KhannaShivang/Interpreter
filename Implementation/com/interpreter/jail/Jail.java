@@ -56,6 +56,9 @@ public class Jail {
         // System.out.println(new AstPrinter().print(expression));
         // Stop if there was a syntax error.
         if (errorOccured) return;
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+        if (errorOccured) return;
         interpreter.interpret(statements);
     }
     static void runtimeError(RuntimeError error) {

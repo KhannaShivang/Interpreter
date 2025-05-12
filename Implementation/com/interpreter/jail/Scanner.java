@@ -65,29 +65,28 @@ class Scanner {
                 if (match('/')) {
                 // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) advance();
-                 } 
-                       
+                }   
                     else 
                     addToken(SLASH);
                     break;
-                case ' ':
-                case '\r':
-                case '\t':
-                // Ignore whitespace.
-                    break;
-                case '\n':line++;
-                    break;
-                case '"':string();
-                    break;
-                default:
-                    if (isDigit(c)) {
-                      number();
-                    } 
-                    else if (isAlpha(c)) {
-                        identifier();
-                    } else {
-                      Jail.error(line, "Unexpected character.");
-                    }
+            case ' ':
+            case '\r':
+            case '\t':
+            // Ignore whitespace.
+                break;
+            case '\n':line++;
+                break;
+            case '"':string();
+                break;
+            default:
+                if (isDigit(c)) {
+                    number();
+                } 
+                else if (isAlpha(c)) {
+                    identifier();
+                } else {
+                    Jail.error(line, "Unexpected character.");
+                }
         }
     }
     private char peek() {
@@ -102,13 +101,13 @@ class Scanner {
     }
     private void string() {
         while (peek() != '"' && !isAtEnd()) {
-        if (peek() == '\n') line++;
-        advance();
-           }
+            if (peek() == '\n') line++;
+            advance();
+        }
         if (isAtEnd()) {
-        Jail.error(line, "Unterminated string.");
-        return;
-           }
+            Jail.error(line, "Unterminated string.");
+            return;
+        }
         // The closing ".
         advance();
         // Trim the surrounding quotes.
@@ -124,9 +123,9 @@ class Scanner {
         // Look for a fractional part.
         if (peek() == '.' && isDigit(peekNext())) {
         // Consume the "."
-        advance();
-        while (isDigit(peek())) advance();
-           }
+            advance();
+            while (isDigit(peek())) advance();
+        }
         addToken(NUMBER,
         Double.parseDouble(source.substring(start, current)));
     }
@@ -137,7 +136,7 @@ class Scanner {
     private void identifier() {
         while (isAlphaNumeric(peek())) advance();
         String text = source.substring(start, current);
-        TokenType type = new Keywords().keywords.getOrDefault(text,IDENTIFIER);
+        TokenType type = Keywords.keywords.getOrDefault(text,IDENTIFIER);
         addToken(type);
     }
     private boolean isAlpha(char c) {

@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Keywords {
-     Map<String, TokenType> keywords;
- Keywords() {
+  static final Map<String, TokenType> keywords;
+  static{
     keywords = new HashMap<>();
     keywords.put("and",AND);
     keywords.put("class",CLASS);
