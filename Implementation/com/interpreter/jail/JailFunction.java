@@ -10,6 +10,12 @@ public class JailFunction implements JailCallable{
         this.declaration = declaration;
         this.closure = closure;
     }
+    
+    JailFunction bind(JailInstance instance) {
+        Environment environment = new Environment(closure);
+        environment.define("this", instance);
+        return new JailFunction(declaration, environment);
+    }
     @Override
     public int arity() {
         return declaration.params.size();

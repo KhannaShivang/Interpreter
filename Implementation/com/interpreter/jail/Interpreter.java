@@ -93,6 +93,41 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
         }
     }
     @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        environment.define(stmt.name.lexeme, null);
+        Map<String, JailFunction> methods = new HashMap<>();
+        for (Stmt.Function method : stmt.methods) {
+            JailFunction function = new JailFunction(method, environment);
+            methods.put(method.name.lexeme, function);
+        }
+        JailClass klass = new JailClass(stmt.name.lexeme,methods);
+        environment.assign(stmt.name, klass);
+        return null;
+    }
+    @Override
+    public Object visitGetExpr(Expr.Get expr){
+        Object object = evaluate(expr.object);
+        if(object instanceof JailInstance){
+            return ((JailInstance) object).get(expr.name);
+        }
+        throw new RuntimeError(expr.name,"Only instances have properties.");
+    }
+    @Override
+    public Object visitSetExpr(Expr.Set expr) {
+        Object object = evaluate(expr.object);
+        if (!(object instanceof JailInstance)) { 
+        throw new RuntimeError(expr.name,
+        "Only instances have fields.");
+            }
+        Object value = evaluate(expr.value);
+        ((JailInstance)object).set(expr.name, value);
+        return value;
+    }
+    @Override
+    public Object visitThisExpr(Expr.This expr) {
+        return lookUpVariable(expr.keyword, expr);
+    }
+    @Override
     public Void visitIfStmt(Stmt.If stmt) {
         if (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.thenBranch);
@@ -151,8 +186,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
                 if (left instanceof Double && right instanceof Double) {
                     return (double)left + (double)right;
                 } 
-               if (left instanceof String && right instanceof String) {
-                    return (String)left + (String)right;
+                if (left instanceof String && right instanceof String) {
+                        return (String)left + (String)right;
+                    }
+                if(left instanceof String && right instanceof Double){
+                    return (String)left + (Double)right;
+                }
+                if(left instanceof Double && right instanceof String){
+                    return (Double)left + (String)right;
                 }
                 throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
             case SLASH:
@@ -161,6 +202,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
             case STAR:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left * (double)right;
+            case MODULO:
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left % (double)right;
             case GREATER:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left > (double)right;

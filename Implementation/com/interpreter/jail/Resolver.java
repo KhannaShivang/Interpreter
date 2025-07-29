@@ -7,15 +7,24 @@ import java.util.Stack;
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Interpreter interpreter;
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+
+    private enum FunctionType {
+        NONE,
+        METHOD,
+        FUNCTION
+    }
     private FunctionType currentFunction = FunctionType.NONE;
+
+    private enum ClassType {
+        NONE,
+        CLASS
+    }
+    private ClassType currentClass = ClassType.NONE;
+
     Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
     }
-    private enum FunctionType {
-        NONE,
-        FUNCTION
-    }
-     @Override
+    @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         beginScope();
         resolve(stmt.statements);
@@ -39,7 +48,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     void resolve(Expr expression){
         expression.accept(this);
     }
-     @Override
+    @Override
     public Void visitVarStmt(Stmt.Var stmt) {
         declare(stmt.name);
         if (stmt.initializer != null) {
@@ -51,7 +60,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private void declare(Token name) {
         if (scopes.isEmpty()) return;
         Map<String, Boolean> scope = scopes.peek();
-         if (scope.containsKey(name.lexeme)) {
+        if (scope.containsKey(name.lexeme)) {
             Jail.error(name, "Already variable with this name in this scope.");
         }
         scope.put(name.lexeme, false);
@@ -98,7 +107,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
-         if (currentFunction == FunctionType.NONE) {
+        if (currentFunction == FunctionType.NONE) {
             Jail.error(stmt.keyword, "Can't return from top-level code.");
         }
         if (stmt.value != null) {
@@ -166,6 +175,42 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitUnaryExpr(Expr.Unary expr) {
         resolve(expr.right);
+        return null;
+    }
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+        declare(stmt.name);
+        define(stmt.name);
+        beginScope();
+        scopes.peek().put("this", true);
+        for (Stmt.Function method : stmt.methods) {
+            FunctionType declaration = FunctionType.METHOD;
+            resolveFunction(method, declaration); 
+        }
+        endScope();
+        currentClass = enclosingClass;
+        return null;
+    }
+    @Override
+    public Void visitGetExpr(Expr.Get expr) {
+        resolve(expr.object);
+        return null;
+    }
+     @Override
+     public Void visitSetExpr(Expr.Set expr) {
+        resolve(expr.value);
+        resolve(expr.object);
+        return null;
+    }
+    @Override
+    public Void visitThisExpr(Expr.This expr) {
+        if (currentClass == ClassType.NONE) {
+            Jail.error(expr.keyword, "Can't use 'this' outside of a class.");
+            return null;
+        }
+        resolveLocal(expr, expr.keyword);
         return null;
     }
 }
