@@ -45,7 +45,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
     }
      @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        JailFunction function = new JailFunction(stmt, environment);
+        JailFunction function = new JailFunction(stmt, environment, false);
         environment.define(stmt.name.lexeme, function);
         return null;
   }
@@ -97,7 +97,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
         environment.define(stmt.name.lexeme, null);
         Map<String, JailFunction> methods = new HashMap<>();
         for (Stmt.Function method : stmt.methods) {
-            JailFunction function = new JailFunction(method, environment);
+            JailFunction function = new JailFunction(method, environment, method.name.lexeme.equals("init"));
             methods.put(method.name.lexeme, function);
         }
         JailClass klass = new JailClass(stmt.name.lexeme,methods);

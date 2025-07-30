@@ -13,15 +13,20 @@ class JailClass implements JailCallable{
         return name;
     }
     @Override
-    public Object call(Interpreter interpreter,
-        List<Object> arguments) {
+    public Object call(Interpreter interpreter,List<Object> arguments) {
         JailInstance instance = new JailInstance(this);
+        JailFunction initializer = findMethod("init");
+        if (initializer != null) {
+            initializer.bind(instance).call(interpreter, arguments);
+        }
         return instance;
     }
     @Override
     public int arity() {
-        return 0;
-    }
+        JailFunction initializer = findMethod("init");
+        if (initializer == null) return 0;
+            return initializer.arity();
+        }
     JailFunction findMethod(String name) {
         if (methods.containsKey(name)) {
             return methods.get(name);
