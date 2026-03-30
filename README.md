@@ -1,7 +1,7 @@
 # JAIL 🔒
 ### Just Another Interpreted Language
  
-JAIL is a custom interpreted programming language built in Java, inspired by the *Crafting Interpreters* book by Robert Nystrom. It features a clean, readable syntax with a tree-walk interpreter and supports everything you need to write real programs.
+JAIL is a custom interpreted programming language built in Java. It features a clean, readable syntax with a tree-walk interpreter and supports everything you need to write real programs.
  
 ---
  
